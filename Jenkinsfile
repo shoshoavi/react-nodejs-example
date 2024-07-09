@@ -21,5 +21,16 @@ pipeline {
                 }
             }
         }
+        stage('deploying the image') {
+            steps {
+                script {
+                    def dockerCmd = 'docker run -d -p 3000:80 shoshoavi/demo-app:1.0.0'
+                    echo 'deploying the image to the remote ec2 machine'
+                    sshagent(['ec2-credentials']) {
+                      sh "ssh -o StrictHostKeyChecking=no ec2-user@44.214.104.210 ${dockerCmd}"
+                    }
+                }
+            }
+        }
     }
 }
