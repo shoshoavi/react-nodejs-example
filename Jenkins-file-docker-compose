@@ -1,0 +1,26 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Check Out Repository') {
+            steps {
+                git 'https://github.com/shoshoavi/react-nodejs-example.git'
+            }
+        }
+        stage('Deploying Docker Compose Containers') {
+            steps {
+                script {
+                    def dockerCmd = 'docker-compose up -d'
+                    echo 'Deploying docker-compose file and building containers on the remote EC2 machine'
+                    sshagent(['ec2-credentials']) {
+                        // Transfer the docker-compose.yml file to the EC2 instance
+                        sh 'scp docker-compose.yml ec2-user@54.160.243.86:/home/ec2-user/'
+                        
+                        // Run Docker Compose on the EC2 instance
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@54.160.243.86 ${dockerCmd}"
+                    }
+                }
+            }
+        }
+    }
+}
